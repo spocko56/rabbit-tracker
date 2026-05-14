@@ -15,10 +15,11 @@
             --card: #ffffff; 
             --text: #000000;    
             --border: #fbcfe8;  
+            --column-bg: #fff5f7; 
+            /* User Colors */
             --color-aranyo: #3b82f6; 
             --color-ravi: #10b981;   
             --color-suha: #8b5cf6;   
-            --danger: #ef4444; 
         }
         * { box-sizing: border-box; font-family: 'Inter', 'Segoe UI', sans-serif; }
         body { margin: 0; background: var(--bg); color: var(--text); }
@@ -26,11 +27,10 @@
         /* Auth Screen */
         #auth-screen { position: fixed; inset: 0; background: #000000; display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 999; }
         .rabbit-logo-auth { width: 60px; height: 60px; fill: var(--primary); margin-bottom: 20px; }
-        input[type="password"], input[type="text"], input[type="date"], select { padding: 10px; border: 2px solid var(--border); border-radius: 6px; outline: none; }
+        input, select { padding: 10px; border: 2px solid var(--border); border-radius: 6px; outline: none; }
         input:focus, select:focus { border-color: var(--primary); }
         button { padding: 10px 20px; cursor: pointer; border-radius: 6px; border: none; font-weight: bold; transition: all 0.2s; }
         button:hover { opacity: 0.9; }
-        button:disabled { opacity: 0.5; cursor: not-allowed; }
         
         /* Header & Main */
         #main-app { display: none; padding: 20px; max-width: 1400px; margin: 0 auto; }
@@ -38,80 +38,71 @@
         .brand { display: flex; align-items: center; gap: 10px; }
         .brand svg { width: 40px; height: 40px; fill: var(--text); }
         .brand h1 { margin: 0; font-size: 1.8rem; color: var(--text); }
-        .view-btn { background: white; border: 2px solid var(--text); color: var(--text); margin-left: 5px; }
+        .view-controls { display: flex; flex-wrap: wrap; gap: 5px; }
+        .view-btn { background: white; border: 2px solid var(--text); color: var(--text); }
         .view-btn.active { background: var(--primary); color: white; border-color: var(--primary); }
 
         /* Task Form */
         .task-form { background: var(--card); padding: 15px; border-radius: 8px; margin-bottom: 30px; border: 2px solid var(--text); display: flex; gap: 10px; flex-wrap: wrap; }
         .task-form input, .task-form select { flex: 1; min-width: 150px; border-color: var(--text); }
-        .task-form button { background: var(--text); color: white; }
+        .task-form button { background: var(--text); color: white; min-width: 120px; }
 
         /* View Containers */
         #daily-view, #weekly-view, #monthly-view { display: none; }
         
-        /* DAILY VIEW: Team Columns */
-        .daily-nav { display: flex; justify-content: center; align-items: center; gap: 20px; margin-bottom: 20px; grid-column: 1 / -1; }
-        .daily-nav button { background: white; border: 2px solid var(--text); color: var(--text); padding: 5px 15px; }
-        .daily-nav button:hover:not(:disabled) { background: var(--primary); color: white; border-color: var(--primary); }
-        .daily-nav h2 { margin: 0; font-size: 1.4rem; min-width: 180px; text-align: center; color: var(--primary); }
+        /* 1. DAILY VIEW (Desktop Kanban) */
+        .daily-desktop { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 20px; }
+        .column { background: var(--column-bg); padding: 15px; border-radius: 12px; min-height: 500px; border: 2px solid var(--border); }
+        .column h3 { margin-top: 0; border-bottom: 2px solid var(--primary); padding-bottom: 10px; }
+        .task-card { background: var(--card); padding: 15px; border-radius: 8px; margin-bottom: 12px; border: 1px solid var(--text); box-shadow: 4px 4px 0px var(--text); }
+        .task-card h4 { margin: 0 0 10px 0; font-size: 1.1rem; }
+        .assignee-badge { display: inline-block; padding: 3px 8px; border-radius: 4px; font-size: 0.75rem; color: white; font-weight: bold; margin-bottom: 10px;}
+        .daily-actions { display: flex; gap: 10px; margin-top: 10px; }
+        .btn-toggle { flex: 1; background: #f1f5f9; border: 1px solid var(--text); color: var(--text); padding: 6px; font-size: 0.85rem; }
+        .btn-toggle.done { background: var(--text); color: white; }
 
-        .daily-board { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+        /* 1. DAILY VIEW (Mobile Accordions) */
+        .daily-mobile { display: none; }
+        .accordion-card { background: var(--card); border: 2px solid var(--text); border-radius: 8px; margin-bottom: 15px; box-shadow: 3px 3px 0px var(--border);}
+        .accordion-card summary { padding: 15px; cursor: pointer; list-style: none; display: flex; align-items: center; justify-content: space-between; font-weight: bold; }
+        .accordion-card summary::-webkit-details-marker { display: none; }
+        .progress-wrap { flex: 1; margin: 0 15px; }
+        .progress-track { width: 100%; height: 8px; background: #e5e7eb; border-radius: 4px; overflow: hidden; margin-top: 5px; }
+        .progress-bar { height: 100%; transition: width 0.4s ease; }
+        .mobile-task-list { padding: 15px; border-top: 2px solid var(--border); display: flex; flex-direction: column; gap: 10px; background: var(--column-bg); }
         
-        /* User Specific Column Tints */
-        .col-aranyo { background: #eff6ff; border: 2px solid var(--color-aranyo); }
-        .col-aranyo h3 { border-bottom-color: var(--color-aranyo); color: var(--color-aranyo); }
-        
-        .col-ravi { background: #ecfdf5; border: 2px solid var(--color-ravi); }
-        .col-ravi h3 { border-bottom-color: var(--color-ravi); color: var(--color-ravi); }
-        
-        .col-suha { background: #f5f3ff; border: 2px solid var(--color-suha); }
-        .col-suha h3 { border-bottom-color: var(--color-suha); color: var(--color-suha); }
+        /* Desktop vs Mobile Toggle */
+        @media (max-width: 768px) {
+            .daily-desktop { display: none !important; }
+            .daily-mobile { display: block !important; }
+            .view-btn { padding: 8px 12px; font-size: 0.85rem; }
+            .brand h1 { font-size: 1.5rem; }
+        }
 
-        .column { padding: 15px; border-radius: 12px; min-height: 500px; }
-        .column h3 { margin-top: 0; border-bottom: 2px solid var(--primary); padding-bottom: 10px; text-align: center; }
-        
-        /* Task Cards & Custom Slider */
-        .task-card { background: var(--card); padding: 15px; border-radius: 8px; margin-bottom: 15px; border: 1px solid var(--text); box-shadow: 4px 4px 0px var(--text); }
-        .task-card.is-done { opacity: 0.6; }
-        .task-card h4 { margin: 0 0 15px 0; font-size: 1.1rem; line-height: 1.4;}
-        
-        .slider-container { background: #f8fafc; padding: 10px; border-radius: 6px; border: 1px dashed var(--border); margin-bottom: 10px;}
-        .slider-header { display: flex; justify-content: space-between; font-size: 0.85rem; font-weight: bold; margin-bottom: 5px; }
-        .slider-val { color: var(--primary); }
-        
-        /* Input Range Styling */
-        input[type="range"] { -webkit-appearance: none; width: 100%; background: transparent; padding: 0; border: none; margin: 5px 0; }
-        input[type="range"]:focus { outline: none; border: none; }
-        input[type="range"]::-webkit-slider-runnable-track { width: 100%; height: 6px; cursor: pointer; background: #cbd5e1; border-radius: 3px; }
-        input[type="range"]::-webkit-slider-thumb { border: 2px solid var(--text); height: 18px; width: 18px; border-radius: 50%; background: var(--primary); cursor: pointer; -webkit-appearance: none; margin-top: -6px; }
-
-        .daily-actions { display: flex; justify-content: flex-end; margin-top: 10px; }
-        .btn-delete { background: white; border: 1px solid var(--danger); color: var(--danger); padding: 4px 10px; border-radius: 4px; font-size: 0.9rem; }
-        .btn-delete:hover { background: var(--danger); color: white; }
-
-        /* WEEKLY VIEW */
-        .weekly-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 10px; overflow-x: auto; }
-        .day-col { background: var(--card); border: 2px solid var(--text); border-radius: 8px; min-height: 400px; min-width: 150px;}
-        .day-header { background: var(--text); color: white; padding: 10px; text-align: center; font-weight: bold; border-bottom: 2px solid var(--text); border-radius: 4px 4px 0 0;}
-        .mini-task { padding: 10px; border-bottom: 1px solid var(--border); display: flex; align-items: flex-start; gap: 8px; font-size: 0.85rem; position: relative; }
+        /* 2. WEEKLY VIEW */
+        .weekly-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; }
+        .day-col { background: var(--card); border: 2px solid var(--text); border-radius: 8px; min-height: 200px; }
+        .day-header { background: var(--text); color: white; padding: 10px; text-align: center; font-weight: bold; border-radius: 4px 4px 0 0;}
+        .mini-task { padding: 10px; border-bottom: 1px solid var(--border); display: flex; align-items: flex-start; gap: 8px; font-size: 0.85rem; background: white;}
         .mini-task input[type="checkbox"] { width: 18px; height: 18px; accent-color: var(--primary); cursor: pointer; margin: 0; flex-shrink: 0;}
         .mini-task .title { flex: 1; word-break: break-word;}
         .mini-task.is-done { opacity: 0.5; text-decoration: line-through; }
         .color-bar { width: 4px; border-radius: 2px; align-self: stretch; }
-        .mini-delete { color: var(--danger); background: none; border: none; cursor: pointer; padding: 0 4px; font-weight: bold; font-size: 1rem; margin-left: auto; }
 
-        /* MONTHLY VIEW */
+        /* 3. MONTHLY VIEW */
         .monthly-list { background: var(--card); border: 2px solid var(--text); border-radius: 8px; padding: 15px; }
         .monthly-item { display: flex; align-items: center; justify-content: space-between; padding: 12px; border-bottom: 1px solid var(--border); }
-        .monthly-item:last-child { border-bottom: none; }
-        .monthly-info { display: flex; align-items: center; gap: 15px; flex: 1; }
-        .monthly-date { font-weight: bold; color: var(--text); min-width: 100px; }
-        .monthly-item input[type="checkbox"] { width: 20px; height: 20px; accent-color: var(--primary); cursor: pointer; margin-right: 15px;}
-        .assignee-badge { display: inline-block; padding: 3px 8px; border-radius: 4px; font-size: 0.75rem; color: white; font-weight: bold; margin: 0;}
+        .monthly-info { display: flex; align-items: center; gap: 15px; flex: 1; flex-wrap: wrap;}
+        .monthly-date { font-weight: bold; color: var(--primary); min-width: 90px; }
+        .monthly-item input[type="checkbox"] { width: 22px; height: 22px; accent-color: var(--text); cursor: pointer; }
         
+        /* User Specific Colors */
         .bg-Aranyo { background-color: var(--color-aranyo); }
         .bg-Ravi { background-color: var(--color-ravi); }
         .bg-Suha { background-color: var(--color-suha); }
+        .text-Aranyo { color: var(--color-aranyo); }
+        .text-Ravi { color: var(--color-ravi); }
+        .text-Suha { color: var(--color-suha); }
     </style>
 </head>
 <body>
@@ -122,7 +113,7 @@
         <path d="M20 7h-1.2l-1.37-3.425C17.202 3.01 16.64 2.66 16.03 2.66h-1.56c-.663 0-1.2.537-1.2 1.2v.002c0 .663.537 1.2 1.2 1.2h.93L16.63 8H20c.552 0 1-.448 1-1s-.448-1-1-1z"/>
     </svg>
     <h2 style="color: white; margin-bottom: 20px;">Rabbit Tracker</h2>
-    <input type="password" id="pass-input" placeholder="Passcode">
+    <input type="password" id="pass-input" placeholder="Enter Passcode">
     <button onclick="authenticate()" style="background: var(--primary); color: white; margin-top: 15px;">Enter Workspace</button>
 </div>
 
@@ -135,10 +126,10 @@
             </svg>
             <div>
                 <h1>Rabbit Tracker</h1>
-                <p style="margin: 0; font-size: 0.9rem; color: #666;">Timezone: IST</p>
+                <p id="date-label" style="margin: 0; font-size: 0.9rem; font-weight: bold; color: var(--primary);"></p>
             </div>
         </div>
-        <div>
+        <div class="view-controls">
             <button class="view-btn active" onclick="changeView('daily')">Daily View</button>
             <button class="view-btn" onclick="changeView('weekly')">Weekly Grid</button>
             <button class="view-btn" onclick="changeView('monthly')">Monthly Overview</button>
@@ -157,30 +148,29 @@
         <button onclick="addNewTask()">+ Add Task</button>
     </div>
 
-    <!-- DAILY VIEW (Team Columns) -->
-    <div id="daily-view" class="daily-board">
-        <div class="daily-nav">
-            <button id="btn-prev-day" onclick="shiftDailyDate(-1)">◀ Prev</button>
-            <h2 id="daily-view-date">Today</h2>
-            <button id="btn-next-day" onclick="shiftDailyDate(1)">Next ▶</button>
+    <!-- DAILY VIEW -->
+    <div id="daily-view">
+        <!-- Desktop Layout -->
+        <div class="daily-desktop">
+            <div class="column"><h3>Doing Today</h3><div id="daily-doing"></div></div>
+            <div class="column">
+                <h3 style="border-bottom-color: var(--text);">Auto-Moved</h3>
+                <p style="font-size:0.75rem; color:#666; margin-top:-5px;">Missed 3:00 AM IST deadlines</p>
+                <div id="daily-moved"></div>
+            </div>
+            <div class="column"><h3 style="border-bottom-color: #d1d5db;">Done</h3><div id="daily-done"></div></div>
         </div>
         
-        <div class="column col-aranyo">
-            <h3>Aranyo</h3>
-            <div id="col-Aranyo"></div>
-        </div>
-        <div class="column col-ravi">
-            <h3>Ravi</h3>
-            <div id="col-Ravi"></div>
-        </div>
-        <div class="column col-suha">
-            <h3>Suha</h3>
-            <div id="col-Suha"></div>
+        <!-- Mobile Layout -->
+        <div class="daily-mobile" id="mobile-accordion-container">
+            <!-- Generated by JS -->
         </div>
     </div>
 
+    <!-- WEEKLY VIEW -->
     <div id="weekly-view" class="weekly-grid"></div>
 
+    <!-- MONTHLY VIEW -->
     <div id="monthly-view" class="monthly-list">
         <h3 style="margin-top:0;">Remaining Month Tasks</h3>
         <div id="monthly-container"></div>
@@ -199,28 +189,28 @@
 
     firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
-    
     let currentView = 'daily';
     let allTasks = [];
-    let dailyOffset = 0; // 0 = today, up to 7 days ahead
 
-    // Custom Progress Map (0, 10, 20, 50, 100)
-    const progressMap = [0, 10, 20, 50, 100];
-
-    // Safely calculate IST Date with an offset of days
-    function getISTDateString(offsetDays = 0) {
+    // --- Core Date Logic (3 AM IST Rollover) ---
+    function getTrackerDateString() {
+        const now = new Date();
+        // Subtract 3 hours from the current exact time. 
+        // This makes sure 2:59 AM still registers as "yesterday".
+        const logicalTime = new Date(now.getTime() - (3 * 60 * 60 * 1000));
+        
+        // Format strictly in Asia/Kolkata
         const options = { timeZone: 'Asia/Kolkata', year: 'numeric', month: '2-digit', day: '2-digit' };
-        const d = new Date();
-        d.setDate(d.getDate() + offsetDays); 
-        const parts = new Intl.DateTimeFormat('en-CA', options).formatToParts(d); 
+        const parts = new Intl.DateTimeFormat('en-CA', options).formatToParts(logicalTime); 
+        
         const y = parts.find(p => p.type === 'year').value;
         const m = parts.find(p => p.type === 'month').value;
-        const day = parts.find(p => p.type === 'day').value;
-        return `${y}-${m}-${day}`;
+        const d = parts.find(p => p.type === 'day').value;
+        return `${y}-${m}-${d}`;
     }
 
     function authenticate() {
-        if(document.getElementById('pass-input').value === "123") {
+        if(document.getElementById('pass-input').value === "#1samawritten") {
             document.getElementById('auth-screen').style.display = 'none';
             document.getElementById('main-app').style.display = 'block';
             startApp();
@@ -230,25 +220,25 @@
     }
 
     function startApp() {
-        document.getElementById('t-date').value = getISTDateString();
+        const trackerDate = getTrackerDateString();
+        document.getElementById('t-date').value = trackerDate;
+        document.getElementById('date-label').innerText = `Tracker Date: ${trackerDate}`;
+        
         runISTHousekeeping(); 
         syncTasks();
-        changeView('daily'); 
+        changeView('daily');
     }
 
-    // AUTOMATION: If past today in IST and not 100%, move to today.
     async function runISTHousekeeping() {
-        const todayIST = getISTDateString();
+        const trackerDate = getTrackerDateString();
         const snapshot = await db.collection("tasks").get();
         const batch = db.batch();
 
         snapshot.forEach(doc => {
             const data = doc.data();
-            // Handle legacy status tasks from previous code version gracefully
-            const prog = data.progress !== undefined ? data.progress : (data.status === 'Done' ? 100 : 0);
-            
-            if (data.date < todayIST && prog < 100) {
-                batch.update(doc.ref, { date: todayIST, progress: prog });
+            // Automatically move if the task date is older than today's "Tracker Date"
+            if (data.date < trackerDate && data.status !== 'Done') {
+                batch.update(doc.ref, { date: trackerDate, status: 'Moved' });
             }
         });
         await batch.commit();
@@ -256,12 +246,7 @@
 
     function syncTasks() {
         db.collection("tasks").orderBy("date", "asc").onSnapshot(snapshot => {
-            allTasks = snapshot.docs.map(doc => {
-                const d = doc.data();
-                // Normalize legacy data on the fly
-                d.progress = d.progress !== undefined ? d.progress : (d.status === 'Done' ? 100 : 0);
-                return { id: doc.id, ...d };
-            });
+            allTasks = snapshot.docs.map(doc => ({id: doc.id, ...doc.data()}));
             renderCurrentView();
         });
     }
@@ -273,35 +258,21 @@
         if(!title || !user || !date) return alert("Please fill title, select assignee, and pick a date.");
 
         await db.collection("tasks").add({
-            title, assignee: user, date, progress: 0, createdAt: Date.now()
+            title, assignee: user, date, status: 'Doing', createdAt: Date.now()
         });
         document.getElementById('t-title').value = '';
     }
 
-    // Direct Progress Update for Slider
-    async function updateTaskProgress(id, indexValue) {
-        const actualProgress = progressMap[indexValue];
-        document.getElementById(`val-${id}`).innerText = actualProgress + '%';
-        await db.collection("tasks").doc(id).update({ progress: actualProgress });
-    }
-
-    // Toggle for Checkboxes (0 or 100)
-    async function toggleFullProgress(id, currentProgress) {
-        const newProgress = (currentProgress === 100) ? 0 : 100;
-        await db.collection("tasks").doc(id).update({ progress: newProgress });
-    }
-
-    async function deleteTask(id) {
-        if(confirm("Delete this task permanently?")) {
-            await db.collection("tasks").doc(id).delete();
-        }
+    async function toggleTaskStatus(id, currentStatus) {
+        const newStatus = (currentStatus === 'Done') ? 'Doing' : 'Done';
+        await db.collection("tasks").doc(id).update({ status: newStatus });
     }
 
     function changeView(v) {
         currentView = v;
         document.querySelectorAll('.view-btn').forEach(btn => btn.classList.toggle('active', btn.innerText.toLowerCase().includes(v)));
         
-        document.getElementById('daily-view').style.display = (v === 'daily') ? 'grid' : 'none';
+        document.getElementById('daily-view').style.display = (v === 'daily') ? 'block' : 'none';
         document.getElementById('weekly-view').style.display = (v === 'weekly') ? 'grid' : 'none';
         document.getElementById('monthly-view').style.display = (v === 'monthly') ? 'block' : 'none';
         
@@ -314,99 +285,115 @@
         else if(currentView === 'monthly') renderMonthly();
     }
 
-    // DAILY NAVIGATION
-    function shiftDailyDate(dir) {
-        dailyOffset += dir;
-        if(dailyOffset < 0) dailyOffset = 0;
-        if(dailyOffset > 7) dailyOffset = 7;
-        renderDaily();
+    // --- Custom Gamified Progress Logic ---
+    function getGamifiedStep(doneCount, totalCount) {
+        if (totalCount === 0) return 0;
+        if (doneCount === totalCount) return 100;
+        
+        const rawPct = (doneCount / totalCount) * 100;
+        if (rawPct < 20) return 10;
+        if (rawPct < 40) return 20;
+        if (rawPct < 80) return 40;
+        return 80;
     }
 
+    // --- 1. DAILY RENDER (Handles Desktop & Mobile) ---
     function renderDaily() {
-        // UI Updates for Nav
-        document.getElementById('btn-prev-day').disabled = (dailyOffset === 0);
-        document.getElementById('btn-next-day').disabled = (dailyOffset === 7);
-        
-        const targetDateIST = getISTDateString(dailyOffset);
-        
-        if (dailyOffset === 0) document.getElementById('daily-view-date').innerText = "Today";
-        else if (dailyOffset === 1) document.getElementById('daily-view-date').innerText = "Tomorrow";
-        else {
-            const parts = targetDateIST.split('-');
-            document.getElementById('daily-view-date').innerText = `${parts[2]}/${parts[1]}/${parts[0]}`;
-        }
+        const trackerDate = getTrackerDateString();
+        const todayTasks = allTasks.filter(t => t.date === trackerDate);
 
-        // Render Columns
-        const lists = { Aranyo: '', Ravi: '', Suha: '' };
-        
-        allTasks.forEach(t => {
-            if(t.date !== targetDateIST) return; 
-            if(!lists.hasOwnProperty(t.assignee)) return; // Failsafe
-            
-            const pIndex = progressMap.indexOf(t.progress) > -1 ? progressMap.indexOf(t.progress) : 0;
-            const isDoneClass = t.progress === 100 ? 'is-done' : '';
-            
+        // --- DESKTOP RENDER ---
+        const lists = { Doing: '', Moved: '', Done: '' };
+        todayTasks.forEach(t => {
+            const btnClass = t.status === 'Done' ? 'btn-toggle done' : 'btn-toggle';
             const html = `
-                <div class="task-card ${isDoneClass}">
+                <div class="task-card">
+                    <span class="assignee-badge bg-${t.assignee}">${t.assignee}</span>
                     <h4>${t.title}</h4>
-                    <div class="slider-container">
-                        <div class="slider-header">
-                            <span>Status</span>
-                            <span class="slider-val" id="val-${t.id}">${t.progress}%</span>
-                        </div>
-                        <input type="range" min="0" max="4" step="1" value="${pIndex}" 
-                            oninput="document.getElementById('val-${t.id}').innerText = [0,10,20,50,100][this.value] + '%'"
-                            onchange="updateTaskProgress('${t.id}', this.value)">
-                    </div>
                     <div class="daily-actions">
-                        <button class="btn-delete" title="Delete Task" onclick="deleteTask('${t.id}')">🗑️ Delete</button>
+                        <button class="${btnClass}" onclick="toggleTaskStatus('${t.id}', '${t.status}')">
+                            ${t.status === 'Done' ? '✔ Done' : 'Complete Task'}
+                        </button>
                     </div>
                 </div>`;
-            lists[t.assignee] += html;
+            lists[t.status] += html;
         });
 
-        document.getElementById('col-Aranyo').innerHTML = lists.Aranyo || '<p style="color:#a1a1aa; text-align:center; font-style:italic;">No tasks</p>';
-        document.getElementById('col-Ravi').innerHTML = lists.Ravi || '<p style="color:#a1a1aa; text-align:center; font-style:italic;">No tasks</p>';
-        document.getElementById('col-Suha').innerHTML = lists.Suha || '<p style="color:#a1a1aa; text-align:center; font-style:italic;">No tasks</p>';
+        document.getElementById('daily-doing').innerHTML = lists.Doing || '<p style="color:#a1a1aa;">No pending tasks</p>';
+        document.getElementById('daily-moved').innerHTML = lists.Moved || '<p style="color:#a1a1aa;">No moved tasks</p>';
+        document.getElementById('daily-done').innerHTML = lists.Done || '<p style="color:#a1a1aa;">No completed tasks</p>';
+
+        // --- MOBILE RENDER (Accordions) ---
+        const users = ['Aranyo', 'Ravi', 'Suha'];
+        let mobileHtml = '';
+
+        users.forEach(user => {
+            const userTasks = todayTasks.filter(t => t.assignee === user);
+            const total = userTasks.length;
+            const done = userTasks.filter(t => t.status === 'Done').length;
+            const progressStep = getGamifiedStep(done, total);
+            
+            let tasksHtml = userTasks.map(t => {
+                const isDone = t.status === 'Done';
+                return `
+                    <div class="mini-task ${isDone ? 'is-done' : ''}" style="border: 1px solid var(--text); border-radius: 6px;">
+                        <input type="checkbox" onchange="toggleTaskStatus('${t.id}', '${t.status}')" ${isDone ? 'checked' : ''}>
+                        <div class="title">${t.title}</div>
+                    </div>`;
+            }).join('');
+
+            if (total === 0) tasksHtml = '<p style="color:#a1a1aa; font-size: 0.9rem; text-align:center;">No tasks for today.</p>';
+
+            mobileHtml += `
+                <details class="accordion-card">
+                    <summary>
+                        <span class="text-${user}" style="font-size:1.2rem;">${user}</span>
+                        <div class="progress-wrap">
+                            <div style="display:flex; justify-content:space-between; font-size:0.8rem; margin-bottom:2px;">
+                                <span>Progress</span>
+                                <strong>${progressStep}%</strong>
+                            </div>
+                            <div class="progress-track">
+                                <div class="progress-bar bg-${user}" style="width: ${progressStep}%"></div>
+                            </div>
+                        </div>
+                        <span style="font-size:1.5rem; color:var(--text);">▾</span>
+                    </summary>
+                    <div class="mobile-task-list">
+                        ${tasksHtml}
+                    </div>
+                </details>`;
+        });
+
+        document.getElementById('mobile-accordion-container').innerHTML = mobileHtml;
     }
 
+    // --- 2. WEEKLY RENDER ---
     function renderWeekly() {
         const grid = document.getElementById('weekly-view');
         grid.innerHTML = '';
         
-        // Build week starting from current IST Today
-        const todayStr = getISTDateString();
-        const parts = todayStr.split('-');
-        const currDate = new Date(parts[0], parts[1]-1, parts[2]); 
-        
+        const currDate = new Date();
         const day = currDate.getDay() || 7; 
+        currDate.setHours(0,0,0,0);
         const startOfWeek = new Date(currDate);
         startOfWeek.setDate(currDate.getDate() - day + 1);
-
         const daysOfWeek = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
 
         for(let i=0; i<7; i++) {
             const targetDate = new Date(startOfWeek);
             targetDate.setDate(startOfWeek.getDate() + i);
-            
-            // Format strictly to YYYY-MM-DD avoiding timezone shifts
-            const y = targetDate.getFullYear();
-            const m = String(targetDate.getMonth()+1).padStart(2, '0');
-            const d = String(targetDate.getDate()).padStart(2, '0');
-            const dateStr = `${y}-${m}-${d}`;
-            
+            const dateStr = targetDate.toISOString().split('T')[0]; 
             const displayDate = targetDate.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
 
             const dayTasks = allTasks.filter(t => t.date === dateStr);
-            
             let tasksHtml = dayTasks.map(t => {
-                const isChecked = t.progress === 100 ? 'checked' : '';
+                const isChecked = t.status === 'Done' ? 'checked' : '';
                 return `
-                <div class="mini-task ${t.progress === 100 ? 'is-done' : ''}">
+                <div class="mini-task ${t.status === 'Done' ? 'is-done' : ''}">
                     <div class="color-bar bg-${t.assignee}"></div>
-                    <input type="checkbox" onchange="toggleFullProgress('${t.id}', ${t.progress})" ${isChecked}>
+                    <input type="checkbox" onchange="toggleTaskStatus('${t.id}', '${t.status}')" ${isChecked}>
                     <div class="title"><strong>${t.assignee[0]}:</strong> ${t.title}</div>
-                    <button class="mini-delete" title="Delete Task" onclick="deleteTask('${t.id}')">×</button>
                 </div>`;
             }).join('');
 
@@ -420,13 +407,13 @@
         }
     }
 
+    // --- 3. MONTHLY RENDER ---
     function renderMonthly() {
         const container = document.getElementById('monthly-container');
-        const todayIST = getISTDateString();
-        const currentMonth = todayIST.substring(0, 7); 
+        const trackerDate = getTrackerDateString();
+        const currentMonth = trackerDate.substring(0, 7); 
         
         const monthTasks = allTasks.filter(t => t.date.startsWith(currentMonth));
-        
         if(monthTasks.length === 0) {
             container.innerHTML = '<p style="color:#a1a1aa;">No tasks for this month.</p>';
             return;
@@ -434,23 +421,18 @@
 
         let html = '';
         monthTasks.forEach(t => {
-            const isChecked = t.progress === 100 ? 'checked' : '';
-            const textStyle = t.progress === 100 ? 'text-decoration: line-through; color: #a1a1aa;' : '';
-            
+            const isChecked = t.status === 'Done' ? 'checked' : '';
+            const textStyle = t.status === 'Done' ? 'text-decoration: line-through; color: #a1a1aa;' : '';
             html += `
             <div class="monthly-item">
                 <div class="monthly-info">
                     <div class="monthly-date">${t.date.split('-').reverse().join('-')}</div>
-                    <span class="assignee-badge bg-${t.assignee}">${t.assignee}</span>
+                    <span class="assignee-badge bg-${t.assignee}" style="margin:0;">${t.assignee}</span>
                     <div style="${textStyle}">${t.title}</div>
                 </div>
-                <div style="display:flex; align-items:center;">
-                    <input type="checkbox" onchange="toggleFullProgress('${t.id}', ${t.progress})" ${isChecked}>
-                    <button class="btn-delete" style="padding: 4px 8px; font-size:0.9rem;" title="Delete Task" onclick="deleteTask('${t.id}')">🗑️</button>
-                </div>
+                <input type="checkbox" onchange="toggleTaskStatus('${t.id}', '${t.status}')" ${isChecked}>
             </div>`;
         });
-        
         container.innerHTML = html;
     }
 </script>
