@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -58,6 +58,7 @@
         .daily-desktop { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 20px; }
         .column { background: var(--column-bg); border-radius: 12px; min-height: 500px; border: 2px solid var(--border); overflow: hidden;}
         .column h3 { margin: 0; padding: 15px; text-align: center; color: white; font-size: 1.2rem; border-bottom: 2px solid var(--text);}
+        .col-timestamp { text-align: center; font-size: 0.75rem; color: #999; padding: 4px 15px 8px; background: var(--column-bg); border-bottom: 1px solid var(--border); }
         .col-tasks { padding: 15px; display: flex; flex-direction: column; gap: 12px; }
         
         /* Task Card & Gamified Slider */
@@ -168,14 +169,17 @@
         <div class="daily-desktop">
             <div class="column border-Aranyo">
                 <h3 class="bg-Aranyo">Aranyo</h3>
+                <div class="col-timestamp" id="ts-Aranyo"></div>
                 <div class="col-tasks" id="col-Aranyo"></div>
             </div>
             <div class="column border-Ravi">
                 <h3 class="bg-Ravi">Ravi</h3>
+                <div class="col-timestamp" id="ts-Ravi"></div>
                 <div class="col-tasks" id="col-Ravi"></div>
             </div>
             <div class="column border-Suha">
                 <h3 class="bg-Suha">Suha</h3>
+                <div class="col-timestamp" id="ts-Suha"></div>
                 <div class="col-tasks" id="col-Suha"></div>
             </div>
         </div>
@@ -212,6 +216,7 @@
     let allTasks = [];
     let dateOffset = 0; 
     let viewedDateStr = '';
+    let userMeta = {};
 
     // --- Slider Logic ---
     // The exact Gamified Steps you requested
@@ -291,6 +296,10 @@
             allTasks = snapshot.docs.map(doc => ({id: doc.id, ...doc.data()}));
             renderCurrentView();
         });
+        db.collection("userMeta").onSnapshot(snapshot => {
+            snapshot.docs.forEach(doc => { userMeta[doc.id] = doc.data(); });
+            renderCurrentView();
+        });
     }
 
     async function addNewTask() {
@@ -308,6 +317,13 @@
     // Called when any slider is moved
     async function updateTaskProgress(id, indexValue) {
         const actualProgress = sliderSteps[indexValue];
+        const now = new Date();
+        const istOptions = { timeZone: 'Asia/Kolkata', day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit', hour12: false };
+        const istStamp = now.toLocaleString('en-GB', istOptions).replace(',', '');
+        const task = allTasks.find(t => t.id === id);
+        if (task) {
+            await db.collection("userMeta").doc(task.assignee).set({ lastUpdated: istStamp }, { merge: true });
+        }
         await db.collection("tasks").doc(id).update({ progress: actualProgress });
     }
 
@@ -357,6 +373,8 @@
             const userTasks = dayTasks.filter(t => t.assignee === user);
             const html = userTasks.map(t => generateTaskCardHTML(t)).join('');
             document.getElementById(`col-${user}`).innerHTML = html || '<p style="color:#a1a1aa; text-align:center;">No tasks</p>';
+            const ts = userMeta[user]?.lastUpdated;
+            document.getElementById(`ts-${user}`).innerText = ts ? `Last updated: ${ts}` : '';
         });
 
         // Mobile Accordions
@@ -370,11 +388,12 @@
             const avgProgress = total > 0 ? Math.round(sumProgress / total) : 0;
             
             const tasksHtml = userTasks.map(t => generateTaskCardHTML(t)).join('');
+            const lastUp = userMeta[user]?.lastUpdated || '';
 
             mobileHtml += `
                 <details class="accordion-card">
                     <summary>
-                        <span class="text-${user}" style="font-size:1.2rem;">${user}</span>
+                        <span class="text-${user}" style="font-size:1.2rem;">${user}${lastUp ? `<span style="display:block; font-size:0.7rem; color:#999; font-weight:normal;">Updated: ${lastUp}</span>` : ''}</span>
                         <div class="progress-wrap">
                             <div style="display:flex; justify-content:space-between; font-size:0.8rem; margin-bottom:2px;">
                                 <span>Avg. Progress</span>
@@ -476,3 +495,4 @@
 </script>
 </body>
 </html>
+
