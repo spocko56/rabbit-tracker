@@ -1,4 +1,4 @@
-!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -58,7 +58,7 @@
         .daily-desktop { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 20px; }
         .column { background: var(--column-bg); border-radius: 12px; min-height: 500px; border: 2px solid var(--border); overflow: hidden;}
         .column h3 { margin: 0; padding: 15px; text-align: center; color: white; font-size: 1.2rem; border-bottom: 2px solid var(--text);}
-        .col-timestamp { text-align: center; font-size: 0.75rem; color: #999; padding: 4px 15px 8px; background: var(--column-bg); border-bottom: 1px solid var(--border); }
+        .col-timestamp { text-align: center; font-size: 0.75rem; color: var(--text-dim, #999); padding: 6px 15px; background: var(--column-bg); opacity: 0.7; }
         .col-tasks { padding: 15px; display: flex; flex-direction: column; gap: 12px; }
         
         /* Task Card & Gamified Slider */
@@ -112,6 +112,29 @@
         .text-Aranyo { color: var(--color-aranyo); }
         .text-Ravi { color: var(--color-ravi); }
         .text-Suha { color: var(--color-suha); }
+    
+        /* Custom Range Slider */
+        input[type="range"] {
+            -webkit-appearance: none; appearance: none;
+            height: 6px; border-radius: 3px; background: #e0e0e0; outline: none;
+        }
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none; appearance: none;
+            width: 18px; height: 18px; border-radius: 50%;
+            background: var(--primary); cursor: pointer;
+            box-shadow: 0 0 4px rgba(0,0,0,0.3);
+            transition: transform 0.15s ease;
+        }
+        input[type="range"]::-webkit-slider-thumb:hover { transform: scale(1.2); }
+        input[type="range"]::-moz-range-thumb {
+            width: 18px; height: 18px; border-radius: 50%; border: none;
+            background: var(--primary); cursor: pointer;
+        }
+
+        /* Enhanced Cards */
+        .task-card { transition: opacity 0.3s ease, transform 0.15s ease; }
+        .task-card:hover { transform: translateY(-2px); }
+        .progress-badge { transition: background 0.2s ease; letter-spacing: 0.5px; }
     </style>
 </head>
 <body>
@@ -220,13 +243,29 @@
 
     // --- Slider Logic ---
     // The exact Gamified Steps you requested
-    const sliderSteps = [0, 10, 20, 40, 80, 100];
+    const sliderSteps = [0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100];
 
     // Helper: Safely get progress (handles legacy tasks that only had "Done" status)
     function getProgress(task) {
         if (task.progress !== undefined) return task.progress;
         return (task.status === 'Done') ? 100 : 0;
     }
+
+
+    // Helper: relative time string
+    function timeAgo(epochMs) {
+        if (!epochMs) return '';
+        const diff = Math.floor((Date.now() - epochMs) / 60000); // minutes
+        if (diff < 1) return 'just now';
+        if (diff < 60) return diff + ' min' + (diff > 1 ? 's' : '') + ' ago';
+        const hrs = Math.floor(diff / 60);
+        const mins = diff % 60;
+        if (mins === 0) return hrs + ' hr' + (hrs > 1 ? 's' : '') + ' ago';
+        return hrs + ' hr ' + mins + ' min ago';
+    }
+
+    // Auto-refresh timestamps every 60s
+    setInterval(() => { if(typeof renderCurrentView === 'function') renderCurrentView(); }, 60000);
 
     // --- Core Date Logic (3 AM IST Rollover) ---
     function getTrackerDateString() {
@@ -317,12 +356,9 @@
     // Called when any slider is moved
     async function updateTaskProgress(id, indexValue) {
         const actualProgress = sliderSteps[indexValue];
-        const now = new Date();
-        const istOptions = { timeZone: 'Asia/Kolkata', day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit', hour12: false };
-        const istStamp = now.toLocaleString('en-GB', istOptions).replace(',', '');
         const task = allTasks.find(t => t.id === id);
         if (task) {
-            await db.collection("userMeta").doc(task.assignee).set({ lastUpdated: istStamp }, { merge: true });
+            await db.collection("userMeta").doc(task.assignee).set({ lastUpdated: Date.now() }, { merge: true });
         }
         await db.collection("tasks").doc(id).update({ progress: actualProgress });
     }
@@ -348,16 +384,16 @@
     function generateTaskCardHTML(t) {
         const progress = getProgress(t);
         let sliderIdx = sliderSteps.indexOf(progress);
-        if(sliderIdx === -1) sliderIdx = progress >= 100 ? 5 : 0; // fallback
+        if(sliderIdx === -1) sliderIdx = progress >= 100 ? 10 : 0; // fallback
         const isDone = progress === 100;
 
         return `
         <div class="task-card ${isDone ? 'is-done' : ''}">
             <h4>${t.title}</h4>
             <div class="slider-wrap">
-                <input type="range" min="0" max="5" step="1" value="${sliderIdx}" 
+                <input type="range" min="0" max="10" step="1" value="${sliderIdx}" 
                        onchange="updateTaskProgress('${t.id}', this.value)"
-                       oninput="this.nextElementSibling.innerText = [0,10,20,40,80,100][this.value] + '%'">
+                       oninput="this.nextElementSibling.innerText = [0,10,20,30,40,50,60,70,80,90,100][this.value] + '%'">
                 <span class="progress-badge bg-${t.assignee}" style="${isDone ? 'background:#6b7280;' : ''}">${progress}%</span>
             </div>
         </div>`;
@@ -374,7 +410,7 @@
             const html = userTasks.map(t => generateTaskCardHTML(t)).join('');
             document.getElementById(`col-${user}`).innerHTML = html || '<p style="color:#a1a1aa; text-align:center;">No tasks</p>';
             const ts = userMeta[user]?.lastUpdated;
-            document.getElementById(`ts-${user}`).innerText = ts ? `Last updated: ${ts}` : '';
+            document.getElementById(`ts-${user}`).innerText = ts ? timeAgo(ts) : '';
         });
 
         // Mobile Accordions
@@ -388,12 +424,13 @@
             const avgProgress = total > 0 ? Math.round(sumProgress / total) : 0;
             
             const tasksHtml = userTasks.map(t => generateTaskCardHTML(t)).join('');
-            const lastUp = userMeta[user]?.lastUpdated || '';
+            const lastUp = userMeta[user]?.lastUpdated;
+            const lastUpStr = lastUp ? timeAgo(lastUp) : '';
 
             mobileHtml += `
                 <details class="accordion-card">
                     <summary>
-                        <span class="text-${user}" style="font-size:1.2rem;">${user}${lastUp ? `<span style="display:block; font-size:0.7rem; color:#999; font-weight:normal;">Updated: ${lastUp}</span>` : ''}</span>
+                        <span class="text-${user}" style="font-size:1.2rem;">${user}${lastUpStr ? `<span style="display:block; font-size:0.7rem; color:var(--text-dim, #999); font-weight:normal;">${lastUpStr}</span>` : ''}</span>
                         <div class="progress-wrap">
                             <div style="display:flex; justify-content:space-between; font-size:0.8rem; margin-bottom:2px;">
                                 <span>Avg. Progress</span>
@@ -434,16 +471,16 @@
             const dayTasks = allTasks.filter(t => t.date === dateStr);
             let tasksHtml = dayTasks.map(t => {
                 const progress = getProgress(t);
-                let sliderIdx = sliderSteps.indexOf(progress) !== -1 ? sliderSteps.indexOf(progress) : (progress >= 100 ? 5 : 0);
+                let sliderIdx = sliderSteps.indexOf(progress) !== -1 ? sliderSteps.indexOf(progress) : (progress >= 100 ? 10 : 0);
                 const isDone = progress === 100;
                 
                 return `
                 <div class="mini-task ${isDone ? 'is-done' : ''}">
                     <strong class="text-${t.assignee}">${t.assignee[0]}:</strong> ${t.title}
                     <div style="display:flex; align-items:center; gap:5px; margin-top:8px;">
-                        <input type="range" min="0" max="5" step="1" value="${sliderIdx}" style="width:100%; height:4px; accent-color:var(--text);"
+                        <input type="range" min="0" max="10" step="1" value="${sliderIdx}" style="width:100%; height:4px; accent-color:var(--text);"
                                onchange="updateTaskProgress('${t.id}', this.value)"
-                               oninput="this.nextElementSibling.innerText = [0,10,20,40,80,100][this.value] + '%'">
+                               oninput="this.nextElementSibling.innerText = [0,10,20,30,40,50,60,70,80,90,100][this.value] + '%'">
                         <span style="font-size:0.7rem; font-weight:bold; min-width:30px;">${progress}%</span>
                     </div>
                 </div>`;
@@ -472,7 +509,7 @@
         let html = '';
         monthTasks.forEach(t => {
             const progress = getProgress(t);
-            let sliderIdx = sliderSteps.indexOf(progress) !== -1 ? sliderSteps.indexOf(progress) : (progress >= 100 ? 5 : 0);
+            let sliderIdx = sliderSteps.indexOf(progress) !== -1 ? sliderSteps.indexOf(progress) : (progress >= 100 ? 10 : 0);
             const isDone = progress === 100;
 
             html += `
@@ -483,9 +520,9 @@
                     <div style="${isDone ? 'text-decoration: line-through;' : ''}">${t.title}</div>
                 </div>
                 <div style="display:flex; align-items:center; gap:10px; min-width: 150px;">
-                    <input type="range" min="0" max="5" step="1" value="${sliderIdx}" style="width:100%; accent-color:var(--text);"
+                    <input type="range" min="0" max="10" step="1" value="${sliderIdx}" style="width:100%; accent-color:var(--text);"
                            onchange="updateTaskProgress('${t.id}', this.value)"
-                           oninput="this.nextElementSibling.innerText = [0,10,20,40,80,100][this.value] + '%'">
+                           oninput="this.nextElementSibling.innerText = [0,10,20,30,40,50,60,70,80,90,100][this.value] + '%'">
                     <span style="font-weight:bold; font-size:0.9rem; min-width: 40px;">${progress}%</span>
                 </div>
             </div>`;
@@ -495,4 +532,5 @@
 </script>
 </body>
 </html>
+
 
